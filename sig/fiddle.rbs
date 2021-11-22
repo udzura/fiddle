@@ -1,0 +1,203 @@
+# TypeProf 0.12.0
+
+# Classes
+module Fiddle
+  VERSION: String
+
+  def self.win32_last_error: -> untyped
+  def self.win32_last_error=: (untyped error) -> untyped
+  def self.win32_last_socket_error: -> untyped
+  def self.win32_last_socket_error=: (untyped error) -> untyped
+  def self.last_error: -> untyped
+  def self.last_error=: (untyped error) -> untyped
+  def dlopen: (untyped library) -> untyped
+  def self.dlopen: (untyped library) -> untyped
+
+  class Closure
+    attr_reader ctype: untyped
+    attr_reader args: untyped
+
+    class BlockCaller < Closure
+      @block: nil
+
+      def initialize: (untyped ctype, untyped args, ?untyped abi) -> nil
+      def call: (*untyped args) -> untyped
+    end
+  end
+
+  module CParser
+    def parse_struct_signature: ([untyped]? signature, ?Hash[untyped, untyped]? tymap) -> ([Array[Array[(Class | Integer | String)?] | Class], Array[(Array[String?] | String)?]])
+    def parse_signature: (untyped signature, ?Hash[untyped, untyped]? tymap) -> [String?, [untyped, String?], Array[untyped]]
+    def parse_ctype: ((String | [untyped])? ty, ?Hash[untyped, untyped]? tymap) -> [[Array[untyped], String?], String?]
+
+    private
+    def split_arguments: ((String | [untyped])? arguments, ?Regexp | String sep) -> Array[String?]
+    def compact: ((String | [untyped])? signature) -> String
+  end
+
+  class Function
+    @need_gvl: bot
+
+    attr_reader abi: untyped
+    attr_reader ptr: bot
+    attr_reader name: untyped
+    def need_gvl?: -> nil
+    def to_i: -> Integer
+    def to_proc: -> Proc
+  end
+
+  module PackInfo
+    def align: (Complex | Float | Integer | Rational addr, nil align) -> (Complex | Float | Integer | Rational)
+    def self.align: (Complex | Float | Integer | Rational addr, nil align) -> (Complex | Float | Integer | Rational)
+  end
+
+  class Packer
+    include PackInfo
+    @template: String
+    @size: Complex | Float | Integer | Rational
+
+    def self.[]: (*untyped types) -> Packer
+    def initialize: ([untyped] types) -> (Complex | Float | Integer | Rational)
+    def size: -> (Complex | Float | Integer | Rational)
+    def pack: (Array[untyped] ary) -> String
+    def unpack: ([untyped] ary) -> (Array[(Float | Integer | String)?])
+
+    private
+    def parse_types: ([untyped] types) -> (Complex | Float | Integer | Rational)
+  end
+
+  module Win32Types
+    def included: (untyped m) -> untyped
+    def self.included: (untyped m) -> untyped
+  end
+
+  module BasicTypes
+    def included: (untyped m) -> untyped
+    def self.included: (untyped m) -> untyped
+  end
+
+  module ValueUtil
+    def unsigned_value: ((Array[(Float | Integer | String)?] | Float | Integer | String)? val, untyped ty) -> ((Array[(Float | Integer | String)?] | Float | Integer | String)?)
+    def signed_value: (untyped val, untyped ty) -> ((Float | Integer | String)?)
+    def wrap_args: (untyped args, untyped tys, untyped funcs) -> Array[bot]
+    def wrap_arg: (untyped arg, untyped ty, ?Array[bot] funcs) -> ((Float | Integer | String)?)
+  end
+
+  class CStruct
+    include _Each[bot]
+
+    def self.entity_class: -> singleton(CStructEntity)
+    def self.offsetof: (nil name, Array[String?] members, Array[Array[(Integer | String)?]] types) -> ((Complex | Float | Integer | Rational)?)
+    # def each: -> bot
+    def each_pair: ?{ -> untyped } -> untyped
+    def to_h: -> Hash[bot, bot]
+    def replace: (untyped another) -> CStruct
+
+    private
+    def unstruct: (untyped value) -> untyped
+  end
+
+  class CUnion
+    def self.entity_class: -> singleton(CUnionEntity)
+    def self.offsetof: (untyped name, untyped members, untyped types) -> Integer
+  end
+
+  class StructArray < Array[untyped]
+    include ValueUtil
+    @ptr: untyped
+    @type: untyped
+    @is_struct: untyped
+    @size: untyped
+    @pack_format: String
+
+    def initialize: (untyped ptr, untyped type_, (Array[(Float | Integer | String)?] | Float | Integer | String)? initial_values) -> void
+    def to_ptr: -> untyped
+    def []=: (untyped index, untyped value) -> untyped
+  end
+
+  module CStructBuilder
+    @entity: untyped
+    self.@entity: bot
+
+    def create: (singleton(CStruct) | singleton(CUnion) klass, Array[Array[(Class | Integer | String)?] | Class] types, Array[(Array[String?] | String)?] members) -> Class
+    def self.create: (singleton(CStruct) | singleton(CUnion) klass, Array[Array[(Class | Integer | String)?] | Class] types, Array[(Array[String?] | String)?] members) -> Class
+    def initialize: (untyped addr, ?nil func) -> untyped
+    def []: (*untyped args) -> untyped
+    def []=: (*untyped args) -> untyped
+    def to_ptr: -> untyped
+    def to_i: -> untyped
+  end
+
+  class CStructEntity
+    include ValueUtil
+    include PackInfo
+    @ctypes: untyped
+    @offset: Array[bot]
+    @size: Complex | Float | Integer | Rational
+    @members: Array[bot]
+    @nested_structs: Hash[bot, bot]
+
+    def self.alignment: (Array[Array[(Integer | String)?]] types) -> Integer
+    def self.malloc: (Array[Array[(Integer | String)?]] types, ?nil func, ?Complex | Float | Integer | Rational size) -> untyped
+    def self.size: (Array[Array[(Integer | String)?]] types) -> (Complex | Float | Integer | Rational)
+    def initialize: (untyped addr, untyped types, ?nil func) -> untyped
+    def assign_names: (untyped members) -> untyped
+    def set_ctypes: (untyped types) -> (Complex | Float | Integer | Rational)
+    def []: (*untyped args) -> ((Array[(Float | Integer | String)?] | Float | Integer | String | StructArray)?)
+    def []=: (*untyped args) -> ((Array[(Float | Integer | String)?] | Float | Integer | String)?)
+    def to_s: -> untyped
+  end
+
+  class CUnionEntity < CStructEntity
+    include PackInfo
+    @ctypes: untyped
+    @offset: Array[bot]
+    @size: untyped
+
+    def self.size: (untyped types) -> untyped
+    def set_ctypes: (untyped types) -> untyped
+  end
+
+  class CompositeHandler
+    @handlers: untyped
+
+    def initialize: (untyped handlers) -> untyped
+    def handlers: -> untyped
+    def sym: (String? symbol) -> nil
+    def []: (untyped symbol) -> nil
+  end
+
+  module Importer
+    CALL_TYPE_TO_ABI: Hash[(:cdecl | :stdcall)?, untyped]
+    extend Importer
+    include CParser
+    include Fiddle
+    @handler: CompositeHandler
+    @func_map: Hash[String?, Function?]
+
+    private
+    attr_reader type_alias: Hash[untyped, untyped]
+
+    public
+    def dlload: (*untyped libs) -> Hash[bot, bot]
+    def typealias: (untyped alias_type, untyped orig_type) -> untyped
+    def sizeof: (untyped ty) -> untyped
+
+    private
+    def parse_bind_options: (untyped opts) -> (Hash[:call_type | :callback_type | :carrier, true])
+
+    public
+    def extern: (untyped signature, *untyped opts) -> Function
+    def bind: (untyped signature, *untyped opts) -> Function?
+    def struct: ([untyped] signature) -> Class
+    def union: (untyped signature) -> Class
+    def []: (untyped name) -> Function?
+    def create_value: (untyped ty, ?nil val) -> untyped
+    alias value create_value
+    def import_value: (untyped ty, untyped addr) -> untyped
+    def handler: -> CompositeHandler
+    def import_symbol: (untyped name) -> untyped
+    def import_function: (String? name, [untyped, String?] ctype, Array[untyped] argtype, ?true? call_type) -> Function
+    def bind_function: (String? name, [untyped, String?] ctype, Array[untyped] argtype, ?true? call_type) -> Function
+  end
+end
